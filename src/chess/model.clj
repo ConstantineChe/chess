@@ -28,9 +28,11 @@
 (defn prepare-board []
   (map
    (fn [x] (map (fn [y]
-     (reset! board (update-in [x y]
-                              (get-in @board [x y] (tiles (str x y))))))
+                 (reset! board (update-in @board [x y]
+                                          ((get-in @board [x y]) (tiles (str x y))))))
                x)) @board))
+
+(prepare-board)
 
 (map #(println (map (fn [n] (:color n)) %)) @board)
 
