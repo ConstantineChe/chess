@@ -1,6 +1,6 @@
 (ns chess.model)
 
-(defrecord Tile [color ^{volatile-mutable true} figure coord])
+(deftype Tile [color ^{volatile-mutable true} figure coord])
 
 (defprotocol Moves
   (move [this x y]))
@@ -33,6 +33,7 @@
                x)) @board))
 
 (prepare-board)
+
 
 (map #(println (map (fn [n] (:color n)) %)) @board)
 
