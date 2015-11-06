@@ -31,25 +31,31 @@
                        )))))
 
 
-(def coords (for [x (range 1 8) y ["a" "b" "c" "d" "e" "f" "g" "h"]]
-    (str y x)))
+(def coords
+  (vec (map (fn [x] (vec (map (fn [y] (str x y))(range 1 9) ))) ["a" "b" "c" "d" "e" "f" "g" "h"])))
 
+(print coords)
+
+(get-in coords [1 2])
 
 (defn prepare-board []
-  (vec (map
-     (fn [x] (map (fn [y]
+  (map
+   (fn [x] (vec (map (fn [y]
                    (reset! board (update-in @board [x y]
-                                            (fn [x] ((get-in @board [x y]) (tiles (str x y)))))))
-                 (range 8)
-                 )) (range 8)
-                    )))
+                                            (fn [n] ((get-in @board [x y])
+                                                    (tiles (get-in coords [x y])))))))
+                 (range 8)))) (range 8)))
+
+(map (fn [x] (map (fn [y] (println (get-in coords [x y] ))) (range 8))) (range 8))
+
+(range 8)
 
 (prepare-board)
 
 
-(map #(println (map (fn [n] (:color n)) %)) @board)
+(map #(println (map (fn [n] (.color n)) %)) @board)
 
-(map #(println %) board-base)
+(map #(println %) @board)
 
 (print @board)
 
