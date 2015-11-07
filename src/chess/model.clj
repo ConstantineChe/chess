@@ -1,16 +1,29 @@
 (ns chess.model)
 
-(deftype Tile [color ^{volatile-mutable true} figure coord])
+(deftype Tile [color ^{:volatile-mutable true}figure coord]
+  (setFigure [this fig]
+    (set! figure fig)))
 
 (defprotocol Moves
-  (move [this x y]))
+  (move [this destination]))
 
-(deftype Figure [color type coord]
-  Moves)
+(deftype Figure [ color type ^{:volatile-mutable true}coord]
+  Moves
+  (move [this destination]
+    (set! coord destination)))
 
 (defn tiles [coord]
   {:black (new Tile :black :empty coord)
    :white (new Tile :white :empty coord)})
+
+(defmulti move (fn [fig] (.type fig)))
+
+(defmethod move :pawn [fig destination]
+  (if (= :empty (get-in @board (update-in 1 (.coord fig) inc)))
+    (do (update-in board (.coord fig) (fn [tile] (.setFigure tile :empty)))
+        (.move fig destination)
+        (update-in board (.coord fig) (fn [tile] (.setFigure tile fig)))
+         switch-turn)))
 
 (def turn (atom :white))
 
@@ -25,14 +38,15 @@
                        (vec (repeatedly 8 (fn [] (switch-turn))))
                        ))))))
 
-(reset! board    (vec (repeatedly 8 (fn []
+(reset! board (vec (repeatedly 8 (fn []
                      (let [n (switch-turn)]
                        (vec (repeatedly 8 (fn [] (switch-turn))))
                        )))))
 
 
 (def coords
-  (vec (map (fn [x] (vec (map (fn [y] (str x y))(range 1 9) ))) ["a" "b" "c" "d" "e" "f" "g" "h"])))
+  (vec (map (fn [x] (vec (map (fn [y] (str x y))
+                             ["a" "b" "c" "d" "e" "f" "g" "h"]))) (rever(range 1 9)) )))
 
 (print coords)
 
@@ -42,7 +56,7 @@
   (map
    (fn [x] (vec (map (fn [y]
                    (reset! board (update-in @board [x y]
-                                            (fn [n] ((get-in @board [x y])
+                                            (fn [_] ((get-in @board [x y])
                                                     (tiles (get-in coords [x y])))))))
                  (range 8)))) (range 8)))
 
@@ -53,7 +67,7 @@
 (prepare-board)
 
 
-(map #(println (map (fn [n] (.color n)) %)) @board)
+(map #(println (map (fn [n] (str (.coord n) " " (.color n))) %)) @board)
 
 (map #(println %) @board)
 
