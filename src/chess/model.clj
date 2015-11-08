@@ -1,13 +1,17 @@
 (ns chess.model)
 
+(defprotocol PTile
+  (setFigure [this fig]))
+
 (deftype Tile [color ^{:volatile-mutable true}figure coord]
+  PTile
   (setFigure [this fig]
     (set! figure fig)))
 
 (defprotocol Moves
   (move [this destination]))
 
-(deftype Figure [ color type ^{:volatile-mutable true}coord]
+(deftype Figure [color type ^{:volatile-mutable true}coord]
   Moves
   (move [this destination]
     (set! coord destination)))
@@ -28,7 +32,7 @@
 (def turn (atom :white))
 
 (defn switch-turn [] (if (= @turn :white)
-                       (reset! turn :black)
+                       (reset! turnxs :black)
                        (reset! turn :white)))
 
 (def board
