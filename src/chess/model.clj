@@ -28,17 +28,26 @@
     (set! moves options)))
 
 (defn tiles [coord]
-  {:black (new Tile :black nil coord)
-   :white (new Tile :white nil coord)})
+  {:black (new Tile :black false coord)
+   :white (new Tile :white false coord)})
 
-(if-let [x (getFigure (get-in @board [1 2]))]
-  x)
+(.setFigure (get-in @board [1 2]) :pawn)
+
+(if-let [x (.getFigure (get-in @board [1 2]))]
+  x 1)
 
 (defmulti move-options (fn [fig] (.type fig)))
 
 (defmethod move-options :pawn [fig destination]
-  (if-let (= :empty (get-in @board (update-in 1 (.coord fig) inc)))
-    (.setOptions fig (vec (get-in @board (update-in 1 (.coord fig) inc))))))
+  (let [options []]
+    (do (if-let [test (get-in @board (update-in 1 (.coord fig) inc))]
+          false
+          (conj options (.coord test)))
+        (map (fn [x]
+               (let [test (get-in @board (vec (map + (.coord fig) [x 1])))] (if (=
+                            ((.color fig) colors :black)
+                            (.color fig test))
+                         (conj options test)))) [1 -1]))))
 
 (defmulti directions (fn [type] type)
   )
@@ -54,10 +63,14 @@
 
 (defn move [from to]
   (let [fig (.figure (get-in @board from))]
-    (do (swap! board (.coord fig) assoc-in (.setFigure tile nil))
+    (do (swap! board (.coord fig) assoc-in (.setFigure tile false))
         (.move fig to)
         (swap! board (.coord fig) assoc-in (.setFigure tile fig))
         switch-turn)))
+
+(def colors {:black :white})
+
+(:white colors :black)
 
 (def turn (atom :white))
 
@@ -91,7 +104,7 @@
    (fn [x] (vec (map (fn [y]
                       (swap! board assoc-in [x y]
                              ((get-in @board [x y])
-                              (tiles (get-in coords [x y])))))
+                              (tiles [x y]))))
                  (range 8)))) (range 8)))
 
 (map (fn [x] (map (fn [y] (println (get-in coords [x y] ))) (range 8))) (range 8))
