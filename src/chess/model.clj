@@ -38,7 +38,7 @@
 
 (defmulti move-options (fn [fig] (.type fig)))
 
-(defmethod move-options :pawn [fig destination]
+(defmethod move-options :pawn [fig]
   (let [options []]
     (do (if-let [test (get-in @board (update-in 1 (.coord fig) inc))]
           false
@@ -48,6 +48,13 @@
                             ((.color fig) colors :black)
                             (.color fig test))
                          (conj options test)))) [1 -1]))))
+
+
+    (.setFigure (get-in @board [1 2]) (Figure. :white :pawn [1 2] []))
+    (.setFigure (get-in @board [1 3]) :pawn)
+(.setFigure (get-in @board [2 3]) (Figure. :black :pawn [2 3] []))
+
+(move-options (.getFigure (get-in @board [1 2])))
 
 (defmulti directions (fn [type] type)
   )
@@ -74,9 +81,7 @@
 
 (def turn (atom :white))
 
-(defn switch-turn [] (if (= @turn :white)
-                       (reset! turn :black)
-                       (reset! turn :white)))
+(defn switch-turn [] (reset! turn (@turn colors :black)))
 
 (def board
   (atom
@@ -85,10 +90,10 @@
                        (vec (repeatedly 8 (fn [] (switch-turn))))
                        ))))))
 
-(reset! board (vec (repeatedly 8 (fn []
-                     (let [n (switch-turn)]
-                       (vec (repeatedly 8 (fn [] (switch-turn))))
-                       )))))
+(defn clean-board []
+  (reset! board (vec (repeatedly 8 (fn []
+                                     (let [n (switch-turn)]
+                                       (vec (repeatedly 8 (fn [] (switch-turn))))))))))
 
 
 (def coords
