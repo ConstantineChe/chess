@@ -56,14 +56,16 @@
           (conj options (.getCoord test)))
         (map (fn [x]
                (let [test (get-in @board (vec (map + (.getCoord fig) [1 x])))]
-                 (if (= ((.getColor fig) colors :black)
-                        (.getColor (.getFigure test)))
+                 (if (and (.getFigure test)
+                      (= ((.getColor fig) colors :black)
+                             (.getColor (.getFigure test))))
                    (conj options (.coord test))))) [1 -1]))))
 
 
 (.setFigure (get-in @board [1 2]) (Figure. :white :pawn [1 2] []))
 (.setFigure (get-in @board [1 3]) (Figure. :white :pawn [1 3] []))
 (.setFigure (get-in @board [2 3]) (Figure. :black :pawn [2 3] []))
+(.setFigure (get-in @board [2 1]) (Figure. :black :pawn [2 3] []))
 
 (move-options (.getFigure (get-in @board [1 2])))
 
