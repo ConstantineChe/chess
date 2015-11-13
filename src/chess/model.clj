@@ -67,7 +67,10 @@
 
 (move-options (.getFigure (get-in @board [1 2])))
 
-(map #(println (map (fn [n] (str (.getFigure n) " " (.color n))) %)) @board)
+(map #(println (map (fn [n] (str (if (.getFigure n)
+                                  (.type (.getFigure n))
+                                  (.getFigure n))
+                                " " (.color n))) %)) @board)
 
 (map #(println %) @board)
 
