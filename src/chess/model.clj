@@ -6,7 +6,9 @@
 
 (defprotocol Moves
   (move [this destination])
-  (setOptions [this options]))
+  (setOptions [this options])
+  (getCoord [this])
+  (ToString [this]))
 
 
 (deftype Tile [color ^{:volatile-mutable true}figure coord]
@@ -25,7 +27,12 @@
     (set! coord destination))
 
   (setOptions [this options]
-    (set! moves options)))
+    (set! moves options))
+
+  (getCoord [this]
+    coord)
+
+  (ToString [this] type))
 
 (defn tiles [coord]
   {:black (new Tile :black false coord)
@@ -33,28 +40,32 @@
 
 (.setFigure (get-in @board [1 2]) :pawn)
 
-(if-let [x (.getFigure (get-in @board [1 2]))]
-  x 1)
+(.getCoord (if-let [x (.getFigure (get-in @board [1 2]))]
+    x 1))
 
 (defmulti move-options (fn [fig] (.type fig)))
 
 (defmethod move-options :pawn [fig]
   (let [options []]
-    (do (if-let [test (get-in @board (update-in 1 (.coord fig) inc))]
+    (do (if-let [test (get-in @board (update-in 1 (.getCoord fig) inc))]
           false
-          (conj options (.coord test)))
+          (conj options (.getCoord test)))
         (map (fn [x]
-               (let [test (get-in @board (vec (map + (.coord fig) [x 1])))] (if (=
-                            ((.color fig) colors :black)
-                            (.color fig test))
-                         (conj options test)))) [1 -1]))))
+               (let [test (get-in @board (vec (map + (.getCoord fig) [x 1])))]
+                 (if (= ((.color fig) colors :black)
+                        (.color fig test))
+                   (conj options test)))) [1 -1]))))
 
 
-    (.setFigure (get-in @board [1 2]) (Figure. :white :pawn [1 2] []))
-    (.setFigure (get-in @board [1 3]) :pawn)
+(.setFigure (get-in @board [1 2]) (Figure. :white :pawn [1 2] []))
+(.setFigure (get-in @board [1 3]) (Figure. :white :pawn [1 3] []))
 (.setFigure (get-in @board [2 3]) (Figure. :black :pawn [2 3] []))
 
 (move-options (.getFigure (get-in @board [1 2])))
+
+(map #(println (map (fn [n] (str (.getFigure n) " " (.color n))) %)) @board)
+
+(map #(println %) @board)
 
 (defmulti directions (fn [type] type)
   )
@@ -96,6 +107,7 @@
                                        (vec (repeatedly 8 (fn [] (switch-turn))))))))))
 
 
+
 (def coords
   (vec (map (fn [x] (vec (map (fn [y] (str x y))
                              ["a" "b" "c" "d" "e" "f" "g" "h"]))) (reverse (range 1 9)) )))
@@ -116,6 +128,7 @@
 
 (range 8)
 
+(clean-board)
 (prepare-board)
 
 (map #(println (map (fn [n] (str (.coord n) " " (.color n))) %)) @board)
