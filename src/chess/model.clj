@@ -8,6 +8,7 @@
   (move [this destination])
   (setOptions [this options])
   (getCoord [this])
+  (getColor [this])
   (ToString [this]))
 
 
@@ -26,6 +27,9 @@
   (move [this destination]
     (set! coord destination))
 
+  (getColor [this]
+    color)
+
   (setOptions [this options]
     (set! moves options))
 
@@ -40,21 +44,21 @@
 
 (.setFigure (get-in @board [1 2]) :pawn)
 
-(.getCoord (if-let [x (.getFigure (get-in @board [1 2]))]
+(.getColor (if-let [x (.getFigure (get-in @board [1 2]))]
     x 1))
 
 (defmulti move-options (fn [fig] (.type fig)))
 
 (defmethod move-options :pawn [fig]
   (let [options []]
-    (do (if-let [test (get-in @board (update-in 1 (.getCoord fig) inc))]
+    (do (if-let [test (get-in @board (map + (.getCoord fig) [0 1]))]
           false
           (conj options (.getCoord test)))
         (map (fn [x]
-               (let [test (get-in @board (vec (map + (.getCoord fig) [x 1])))]
-                 (if (= ((.color fig) colors :black)
-                        (.color fig test))
-                   (conj options test)))) [1 -1]))))
+               (let [test (get-in @board (vec (map + (.getCoord fig) [1 x])))]
+                 (if (= ((.getColor fig) colors :black)
+                        (.getColor (.getFigure test)))
+                   (conj options (.coord test))))) [1 -1]))))
 
 
 (.setFigure (get-in @board [1 2]) (Figure. :white :pawn [1 2] []))
